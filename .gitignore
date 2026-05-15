@@ -1,11 +1,43 @@
+# Virtual environments
 venv/
+.venv/
+env/
+
+# Python
 __pycache__/
 *.pyc
-.env
+*.pyo
+*.pyd
+
+# Django
+*.sqlite3
 db.sqlite3
+media/
+
+# Environment variables
+.env
+
+# IDEs and editors
 .idea/
 .vscode/
+*.swp
+*.swo
+
+# Testing
 .coverage
 htmlcov/
 .pytest_cache/
+
+# Mac OS
 .DS_Store
+
+# Logs
+*.log
+logs/
+
+# Docker (optional - usually we DO want to commit docker-compose.yml)
+.dockerignore
+
+# Byte-compiled files
+__pycache__/
+*.py[cod]
