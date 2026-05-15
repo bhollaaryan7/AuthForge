@@ -1,103 +1,277 @@
-# AuthForge
+# AuthForge Architecture
 
-AuthForge is a production-style authentication and identity management backend platform built using Django, PostgreSQL, and Docker.
+## Overview
 
-The project demonstrates backend engineering concepts including:
+AuthForge is a production-style backend API platform built using Django REST Framework and PostgreSQL.
 
-- JWT authentication
-- Session management
-- Role-based access control
-- Audit logging
-- Asynchronous task processing
+The project was designed to demonstrate practical backend engineering skills including:
+
+- authentication systems
 - REST API architecture
-- Production-ready deployment practices
+- relational database modeling
+- scalable backend organization
+- API security
+- production-oriented development practices
 
-## Why Django?
+---
 
-Django was chosen because it provides:
+# Core Technologies
 
-- Mature authentication tooling
-- Strong ORM support
-- Security-focused defaults
-- Rapid backend development
-- Scalability for startup environments
+| Technology | Purpose |
+|---|---|
+| Django | Core backend framework |
+| Django REST Framework | API development |
+| PostgreSQL | Relational database |
+| SimpleJWT | JWT authentication |
+| drf-spectacular | OpenAPI/Swagger documentation |
 
-Django REST Framework was added for API development.
+---
 
-## Why PostgreSQL?
+# Architectural Style
 
-PostgreSQL was selected because it offers:
+AuthForge uses a **modular monolith architecture**.
+
+This architecture was selected because it:
+
+- keeps development simpler than microservices
+- reduces operational complexity
+- improves maintainability
+- enables clean domain separation
+- supports future scalability
+
+The system is divided into isolated Django apps by responsibility.
+
+---
+
+# Application Structure
+
+```text
+apps/
+├── accounts/
+├── notes/
+```
+
+## accounts
+Responsible for:
+- custom user model
+- registration
+- authentication
+- JWT token workflows
+- authenticated user retrieval
+
+---
+
+## notes
+Responsible for:
+- CRUD note operations
+- note ownership enforcement
+- tagging system
+- search functionality
+- pagination support
+
+---
+
+# Authentication Design
+
+The system uses JWT (JSON Web Token) authentication.
+
+Authentication flow:
+
+1. User registers account
+2. User logs in with email/password
+3. API returns:
+   - access token
+   - refresh token
+4. Access token is attached to protected requests
+
+Example:
+
+```http
+Authorization: Bearer <access_token>
+```
+
+---
+
+# Database Design
+
+PostgreSQL was selected because it provides:
 
 - ACID compliance
-- Strong relational integrity
-- Excellent indexing support
-- Advanced querying capabilities
-- JSON support for flexible metadata
-- Production-grade reliability
+- strong relational integrity
+- production-grade reliability
+- efficient indexing
+- scalable relational modeling
 
-## Architecture Style
+---
 
-The project uses a modular monolith architecture.
+# Core Models
 
-This approach was selected because:
+## User
 
-- It keeps development simpler than microservices
-- It reduces operational overhead
-- It allows clean domain separation
-- It can evolve into services later if needed
+Custom Django user model using email-based authentication.
 
-The system is separated into isolated Django apps:
-- accounts
-- users
-- audit
-- permissions
-
-## Authentication Strategy
-
-JWT authentication is used with:
-
-- short-lived access tokens
-- refresh tokens
-
-This approach enables stateless authentication and improves scalability.
-
-## Core Tables
-
-### users
+Fields include:
 - id
 - email
-- password_hash
+- first_name
+- last_name
+- password
+
+---
+
+## Note
+
+Represents user-created notes.
+
+Fields:
+- id
+- user
+- title
+- content
 - created_at
+- updated_at
 
-### sessions
+Relationships:
+- belongs to a user
+- many-to-many relationship with tags
+
+---
+
+## Tag
+
+Reusable categorization entity.
+
+Fields:
 - id
-- user_id
-- refresh_token
-- expires_at
+- name
 
-### audit_logs
-- id
-- user_id
-- action
-- timestamp
+Relationships:
+- attached to many notes
 
-## Security
+---
 
-The system includes:
+# API Design Decisions
 
-- password hashing
+## Versioned API
+
+Endpoints are versioned:
+
+```text
+/api/v1/
+```
+
+This approach supports:
+- future API evolution
+- backward compatibility
+- safer client upgrades
+
+---
+
+## RESTful Design
+
+The API follows REST conventions:
+
+| Method | Purpose |
+|---|---|
+| GET | Retrieve data |
+| POST | Create data |
+| PUT/PATCH | Update data |
+| DELETE | Remove data |
+
+---
+
+# Security Design
+
+Implemented security features:
+
 - JWT authentication
+- password hashing
+- protected endpoints
+- user-level data isolation
+- environment variable configuration
+
+Example:
+- users can only access their own notes
+- direct ID access to another user's note is blocked
+
+---
+
+# Query & Scaling Features
+
+The Notes API includes:
+
+## Pagination
+Prevents unbounded dataset responses.
+
+## Ordering
+Newest notes appear first.
+
+## Search
+Supports query filtering across:
+- title
+- content
+
+---
+
+# API Documentation
+
+The project uses OpenAPI/Swagger documentation via drf-spectacular.
+
+Features:
+- interactive API testing
+- request/response schemas
+- JWT authentication support
+- automatic schema generation
+
+Documentation endpoints:
+
+```text
+/api/docs/
+/api/schema/
+```
+
+---
+
+# Response Standardization
+
+The API uses structured success responses to improve consistency and developer experience.
+
+Example:
+
+```json
+{
+  "success": true,
+  "message": "Note created successfully",
+  "data": {}
+}
+```
+
+---
+
+# Future Enhancements
+
+Potential future improvements:
+
+- Docker containerization
+- CI/CD pipelines
+- Redis caching
+- background task queues
+- role-based access control (RBAC)
+- audit logging
 - rate limiting
-- CSRF protection
-- secure environment variables
-- account lockout protection
-
-## Future Improvements
-
-Potential future improvements include:
-
-- Kubernetes deployment
-- microservice extraction
-- distributed caching
-- event-driven architecture
+- deployment orchestration
 - observability tooling
+
+---
+
+# Why This Architecture Was Chosen
+
+The project intentionally prioritizes:
+
+- clean backend organization
+- maintainability
+- scalability
+- developer experience
+- production-style patterns
+
+The goal was to simulate how an early-stage startup backend might be structured while keeping operational complexity manageable.
